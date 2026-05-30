@@ -50,8 +50,7 @@ const FEATURES = [
     defaultWeight: 0, enabled: false,
     desc: 'Geforderter Einstiegslohn. Niedriger = „günstiger" = höherer Teilscore.',
     min: 1000, max: 10000, unit: '€/Monat', higherIsBetter: false,
-    ethics: 'Bewerber nach Kosten zu bewerten ist ethisch heikel und kann Qualifizierte ' +
-            'benachteiligen. Daher standardmäßig deaktiviert.'
+    ethics: 'Bewerber nach Kosten zu bewerten ist ethisch kritisch. Daher standardmäßig deaktiviert.'
   }
 ];
 
