@@ -486,7 +486,7 @@ function openBewerten(cand) {
     src.innerHTML = `Geladen aus Datensatz: <strong>${cand.nachname}, ${cand.vorname}</strong> ` +
       `(${cand.quelle}). Berufserfahrung = Betriebszugehörigkeit (aus Einstellungs-/Kündigungsdatum), ` +
       `Fehlzeiten als Rate pro Jahr. Werte sind editierbar. ` +
-      `<button type="button" id="bewerten-clear">leeren</button>`;
+      `<button type="button" id="bewerten-clear">Felder leeren</button>`;
   } else {
     applicant = blankApplicant();
     src.hidden = true; src.innerHTML = '';
