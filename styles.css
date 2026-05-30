@@ -159,6 +159,7 @@ select, input[type="number"], input.filter {
 .map-table th, .map-table td { border: 1px solid var(--line); padding: 6px 12px; text-align: left; }
 .map-table th { background: #f8fafc; color: var(--muted); font-size: .82rem; }
 .map-table td.ts { text-align: right; font-variant-numeric: tabular-nums; font-weight: 600; color: var(--accent); }
+.map-note { margin: -12px 0 18px; max-width: 560px; }
 
 .formula {
   background: #f8fafc; border: 1px solid var(--line); border-radius: 10px;
