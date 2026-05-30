@@ -296,16 +296,29 @@ function fmtDate(iso) {
   const [y, m, d] = iso.split('-');
   return `${d}.${m}.${y}`;
 }
+// Wandelt einen Datensatz in ein bewertbares Bewerber-Objekt um.
+// Berufserfahrung wird aus der Betriebszugehörigkeit abgeleitet,
+// Fehlzeiten auf eine Rate pro Jahr normiert.
+function candidateToApplicant(c) {
+  const round1 = x => (x == null ? null : Math.round(x * 10) / 10);
+  const rate = c.betriebszugehoerigkeit > 0 ? c.fehlzeiten / c.betriebszugehoerigkeit : c.fehlzeiten;
+  return {
+    schulabschluss: c.schulabschluss, berufsabschluss: c.berufsabschluss,
+    qualifikationsstufe: c.qualifikationsstufe,
+    berufserfahrung: round1(c.betriebszugehoerigkeit),
+    fehlzeiten: round1(rate),
+    gehaltEinstieg: c.gehaltEinstieg
+  };
+}
 function renderDataTable() {
   const filter = (document.getElementById('daten-filter').value || '').toLowerCase();
   const rows = candidates.map(c => {
-    // Fehlzeit als Rate (Monate/Jahr) über die Beschäftigungsdauer normieren
-    const rate = c.betriebszugehoerigkeit > 0 ? c.fehlzeiten / c.betriebszugehoerigkeit : c.fehlzeiten;
-    const { score, sumW } = scoreOf({ ...c, fehlzeiten: rate });
+    const sObj = candidateToApplicant(c);   // gleiche Ableitung wie in der Detailansicht
+    const { score, sumW } = scoreOf(sObj);
     return {
       name: `${c.nachname}, ${c.vorname}`, quelle: c.quelle,
       schul: c.schulabschluss, beruf: c.berufsabschluss, qual: c.qualifikationsstufe,
-      fz: c.fehlzeiten ?? 0, fzrate: rate,
+      fz: c.fehlzeiten ?? 0, fzrate: sObj.fehlzeiten ?? 0,
       ed: c.einstellungsdatum || '', kd: c.kuendigungsdatum || '',
       score: sumW === 0 ? -1 : score,
       _cand: c
@@ -468,19 +481,12 @@ document.getElementById('reset-map').onclick = () => {
 function openBewerten(cand) {
   const src = document.getElementById('bewerten-source');
   if (cand) {
-    const rate = cand.betriebszugehoerigkeit > 0
-      ? cand.fehlzeiten / cand.betriebszugehoerigkeit : cand.fehlzeiten;
-    applicant = {
-      schulabschluss: cand.schulabschluss, berufsabschluss: cand.berufsabschluss,
-      qualifikationsstufe: cand.qualifikationsstufe,
-      berufserfahrung: null, // nicht im Datensatz enthalten
-      fehlzeiten: rate == null ? null : Math.round(rate * 10) / 10,
-      gehaltEinstieg: cand.gehaltEinstieg
-    };
+    applicant = candidateToApplicant(cand);
     src.hidden = false;
     src.innerHTML = `Geladen aus Datensatz: <strong>${cand.nachname}, ${cand.vorname}</strong> ` +
-      `(${cand.quelle}). Fehlzeiten als Rate pro Jahr; Berufserfahrung ist im Datensatz nicht ` +
-      `enthalten. Werte sind editierbar. <button type="button" id="bewerten-clear">leeren</button>`;
+      `(${cand.quelle}). Berufserfahrung = Betriebszugehörigkeit (aus Einstellungs-/Kündigungsdatum), ` +
+      `Fehlzeiten als Rate pro Jahr. Werte sind editierbar. ` +
+      `<button type="button" id="bewerten-clear">leeren</button>`;
   } else {
     applicant = blankApplicant();
     src.hidden = true; src.innerHTML = '';
