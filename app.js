@@ -38,8 +38,9 @@ const FEATURES = [
   {
     key: 'fehlzeiten', label: 'Fehlzeiten', type: 'numeric',
     defaultWeight: 4, enabled: true,
-    desc: 'Fehltage/-monate pro Jahr. Weniger ist besser (0 Monate = 100 %).',
-    min: 0, max: 6, unit: 'Monate/Jahr', higherIsBetter: false
+    desc: 'Fehlzeit pro Jahr. Bei bestehenden Mitarbeitenden wird die Gesamt-Fehlzeit ' +
+          'auf die Beschäftigungsdauer umgerechnet (Monate/Jahr). Weniger ist besser.',
+    min: 0, max: 3, unit: 'Monate/Jahr', higherIsBetter: false
   },
   {
     key: 'gehaltEinstieg', label: 'Gehaltsvorstellung', type: 'numeric',
@@ -299,7 +300,9 @@ function fmtDate(iso) {
 function renderDataTable() {
   const filter = (document.getElementById('daten-filter').value || '').toLowerCase();
   const rows = candidates.map(c => {
-    const { score, sumW } = scoreOf(c);
+    // Fehlzeit als Rate (Monate/Jahr) über die Beschäftigungsdauer normieren
+    const rate = c.betriebszugehoerigkeit > 0 ? c.fehlzeiten / c.betriebszugehoerigkeit : c.fehlzeiten;
+    const { score, sumW } = scoreOf({ ...c, fehlzeiten: rate });
     return {
       name: `${c.nachname}, ${c.vorname}`, quelle: c.quelle,
       schul: c.schulabschluss, beruf: c.berufsabschluss, qual: c.qualifikationsstufe,
