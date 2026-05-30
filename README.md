@@ -62,4 +62,6 @@ Lokal testen:
 ```bash
 npx serve .       # oder: python3 -m http.server
 ```
-KI-Deklaration: Zur Erstellung dieser Website wurde Claude Code als Hilfstool verwendet.
+## KI-Deklaration:
+
+Zur Erstellung dieser Website wurde Claude Code als Hilfstool verwendet.
