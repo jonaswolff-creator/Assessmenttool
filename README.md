@@ -64,4 +64,4 @@ npx serve .       # oder: python3 -m http.server
 ```
 ## KI-Deklaration:
 
-Zur Erstellung dieser Website wurde Claude Code als Hilfstool verwendet.
+Zur Erstellung der Website wurde Claude Code als Hilfstool verwendet.
