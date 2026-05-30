@@ -32,7 +32,7 @@ const FEATURES = [
   {
     key: 'berufserfahrung', label: 'Berufserfahrung', type: 'numeric',
     defaultWeight: 8, enabled: true,
-    desc: 'Einschlägige Berufsjahre. 0 Jahre = 0 %, 20+ Jahre = 100 %.',
+    desc: 'Berufsjahre',
     min: 0, max: 20, unit: 'Jahre', higherIsBetter: true
   },
   {
