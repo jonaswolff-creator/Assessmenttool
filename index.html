@@ -3,98 +3,196 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>HR Eignungs-Score · Bewerberauswahl</title>
+  <title>HR Eignungs-Score</title>
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
   <header class="site-header">
     <div class="wrap">
-      <h1>HR&nbsp;Eignungs-Score</h1>
+      <button class="home-link" data-nav="home" type="button">HR&nbsp;Eignungs-Score</button>
       <p class="tagline">Transparente Entscheidungsunterstützung für die Bewerberauswahl</p>
     </div>
   </header>
 
-  <main class="wrap layout">
-    <!-- LINKE SPALTE: Eingabe -->
-    <section class="card" id="input-card">
-      <h2>Bewerberdaten</h2>
+  <main class="wrap">
 
-      <label class="field">
-        <span>Kandidat aus Datensatz laden <small>(optional)</small></span>
-        <select id="dataset-select">
-          <option value="">— neuen Bewerber manuell eingeben —</option>
-        </select>
-      </label>
-
-      <div id="feature-inputs" class="feature-inputs"></div>
-
-      <details class="protected-box">
-        <summary>Geschützte Merkmale (nicht bewertet)</summary>
-        <p class="muted small">
-          Diese Merkmale fließen aus rechtlichen und ethischen Gründen (AGG, DSGVO Art.&nbsp;22)
-          <strong>nicht</strong> in den Score ein. Sie dienen nur der Information.
-        </p>
-        <div id="protected-info" class="protected-info"></div>
-      </details>
+    <!-- ============ STARTSEITE ============ -->
+    <section id="view-home" class="view active">
+      <p class="intro">
+        Womit möchten Sie starten? Wählen Sie einen Bereich.
+      </p>
+      <div class="home-grid">
+        <button class="home-card" data-nav="bewerten" type="button">
+          <span class="hc-icon">📝</span>
+          <span class="hc-title">Bewerber bewerten</span>
+          <span class="hc-desc">Daten eines Bewerbers eingeben und den Eignungs-Score berechnen.</span>
+        </button>
+        <button class="home-card" data-nav="gewichtung" type="button">
+          <span class="hc-icon">⚖️</span>
+          <span class="hc-title">Gewichtung anpassen</span>
+          <span class="hc-desc">Festlegen, wie wichtig jedes Kriterium ist – oder es ganz ausschließen.</span>
+        </button>
+        <button class="home-card" data-nav="daten" type="button">
+          <span class="hc-icon">📊</span>
+          <span class="hc-title">Datensätze ansehen</span>
+          <span class="hc-desc">Alle vorhandenen Personen mit ihrem berechneten Score durchsehen.</span>
+        </button>
+        <button class="home-card" data-nav="formel" type="button">
+          <span class="hc-icon">🧮</span>
+          <span class="hc-title">Formel erklärt</span>
+          <span class="hc-desc">Wie der Prozentwert genau zustande kommt – Schritt für Schritt.</span>
+        </button>
+      </div>
     </section>
 
-    <!-- RECHTE SPALTE: Ergebnis -->
-    <section class="card" id="result-card">
-      <h2>Eignungs-Score</h2>
-      <div class="gauge">
-        <svg viewBox="0 0 120 120" class="gauge-svg">
-          <circle class="gauge-bg" cx="60" cy="60" r="52" />
-          <circle id="gauge-fg" class="gauge-fg" cx="60" cy="60" r="52" />
-        </svg>
-        <div class="gauge-center">
-          <span id="score-value">0%</span>
-          <span id="score-label" class="score-label">—</span>
+    <!-- ============ BEWERBER BEWERTEN ============ -->
+    <section id="view-bewerten" class="view">
+      <button class="back" data-nav="home" type="button">← Start</button>
+      <h2>Bewerber bewerten</h2>
+      <p class="muted">Geben Sie die Angaben des Bewerbers ein. Der Score aktualisiert sich automatisch.</p>
+
+      <div class="two-col">
+        <div class="card">
+          <h3>Angaben des Bewerbers</h3>
+          <div id="bewerten-inputs" class="feature-inputs"></div>
+          <p class="muted small">
+            Name, Geschlecht und Alter werden bewusst <strong>nicht</strong> abgefragt –
+            sie dürfen die Bewertung nicht beeinflussen (Diskriminierungsschutz).
+          </p>
+        </div>
+
+        <div class="card">
+          <h3>Ergebnis</h3>
+          <div class="gauge">
+            <svg viewBox="0 0 120 120" class="gauge-svg">
+              <circle class="gauge-bg" cx="60" cy="60" r="52" />
+              <circle id="gauge-fg" class="gauge-fg" cx="60" cy="60" r="52" />
+            </svg>
+            <div class="gauge-center">
+              <span id="score-value">–</span>
+              <span id="score-label" class="score-label">—</span>
+            </div>
+          </div>
+          <p id="recommendation" class="recommendation"></p>
+          <table class="breakdown" id="breakdown">
+            <thead>
+              <tr><th>Kriterium</th><th>Wert</th><th>Teil&shy;score</th><th>Gewicht</th><th>Beitrag</th></tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+          <p class="muted small">„Beitrag" = Anteil dieses Kriteriums am Gesamtscore in Prozentpunkten (Pp).</p>
         </div>
       </div>
-
-      <p id="recommendation" class="recommendation"></p>
-
-      <h3>Wie kommt dieser Score zustande?</h3>
-      <table class="breakdown" id="breakdown">
-        <thead>
-          <tr><th>Faktor</th><th>Wert</th><th>Teil&shy;score</th><th>Gewicht</th><th>Beitrag</th></tr>
-        </thead>
-        <tbody></tbody>
-      </table>
-
-      <div id="reference" class="reference hidden">
-        <h3>Realitäts-Check <small>(tatsächlicher Werdegang)</small></h3>
-        <div id="reference-body"></div>
-        <p class="muted small">
-          Hinweis: Der Score ist eine Prognose aus wenigen Merkmalen. Der reale Werdegang
-          zeigt, dass Eignung sich nicht vollständig vorhersagen lässt – die finale
-          Entscheidung trifft immer ein Mensch.
-        </p>
-      </div>
     </section>
 
-    <!-- EINSTELLUNGEN -->
-    <section class="card full" id="settings-card">
+    <!-- ============ GEWICHTUNG ============ -->
+    <section id="view-gewichtung" class="view">
+      <button class="back" data-nav="home" type="button">← Start</button>
       <div class="settings-head">
-        <h2>Einstellungen: Gewichtung der Faktoren</h2>
+        <h2>Gewichtung anpassen</h2>
         <button id="reset-weights" class="btn-secondary" type="button">Zurücksetzen</button>
       </div>
       <p class="muted">
-        Legen Sie fest, wie wichtig jeder Faktor ist (Gewicht&nbsp;0–10) und ob er
-        überhaupt berücksichtigt wird. Faktoren mit Gewicht&nbsp;0 oder deaktivierte
-        Faktoren fließen nicht ein.
+        Stellen Sie pro Kriterium ein, wie stark es zählt (Gewicht&nbsp;0–10) und ob es
+        überhaupt berücksichtigt wird. Deaktivierte Kriterien oder Gewicht&nbsp;0 fließen
+        nicht ein. Die Einstellungen werden im Browser gespeichert.
       </p>
       <div id="weight-controls" class="weight-controls"></div>
     </section>
+
+    <!-- ============ DATENSÄTZE ============ -->
+    <section id="view-daten" class="view">
+      <button class="back" data-nav="home" type="button">← Start</button>
+      <h2>Datensätze</h2>
+      <p class="muted">
+        Alle vorhandenen Personen mit ihrem Score (berechnet mit den aktuellen Gewichtungen).
+        Diese Werte sind fest – sie stammen aus den Datensätzen und sind nicht editierbar.
+        <br><small>Hinweis: „Berufserfahrung" ist in den Datensätzen nicht enthalten und bleibt
+        hier deshalb unberücksichtigt. „Status" zeigt den tatsächlichen späteren Werdegang.</small>
+      </p>
+      <input id="daten-filter" class="filter" type="search" placeholder="Suchen (Name)…" />
+      <div class="table-scroll">
+        <table class="data-table" id="data-table">
+          <thead>
+            <tr>
+              <th data-sort="name">Name</th>
+              <th data-sort="quelle">Quelle</th>
+              <th data-sort="schul">Schule</th>
+              <th data-sort="beruf">Beruf</th>
+              <th data-sort="qual">Stufe</th>
+              <th data-sort="fz">Fehlz.</th>
+              <th data-sort="score" class="sorted-desc">Score ▾</th>
+              <th data-sort="status">Status</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ============ FORMEL ============ -->
+    <section id="view-formel" class="view">
+      <button class="back" data-nav="home" type="button">← Start</button>
+      <h2>Wie wird der Score berechnet?</h2>
+
+      <div class="card">
+        <h3>1. Jedes Kriterium wird in einen Teilscore von 0–100&nbsp;% übersetzt</h3>
+        <p class="muted">
+          Damit unterschiedliche Kriterien vergleichbar werden, bekommt jeder mögliche Wert
+          einen festen Teilscore. <strong>0&nbsp;% = ungünstigster Wert, 100&nbsp;% = bester Wert.</strong>
+        </p>
+        <p class="muted small">
+          Bei <em>kategorialen</em> Kriterien (z.&nbsp;B. Berufsabschluss) ist das eine feste
+          Zuordnungstabelle. Bei <em>Zahlen</em>-Kriterien (z.&nbsp;B. Berufserfahrung) wird linear
+          zwischen einem Minimal- und Maximalwert umgerechnet.
+        </p>
+        <div id="formel-tables"></div>
+      </div>
+
+      <div class="card">
+        <h3>2. Teilscores werden nach Gewicht gemittelt</h3>
+        <p>Der Gesamtscore ist der <strong>gewichtete Durchschnitt</strong> aller aktiven Kriterien:</p>
+        <div class="formula">
+          Score&nbsp;=&nbsp;
+          <span class="frac">
+            <span class="frac-top">Summe&nbsp;( Gewicht × Teilscore )</span>
+            <span class="frac-bot">Summe&nbsp;der&nbsp;Gewichte</span>
+          </span>
+          &nbsp;× 100&nbsp;%
+        </div>
+        <p class="muted small">
+          Ein höheres Gewicht macht ein Kriterium wichtiger. Kriterien mit Gewicht&nbsp;0 oder
+          ausgeschaltete Kriterien zählen nicht mit – sie stehen weder oben noch unten im Bruch.
+        </p>
+      </div>
+
+      <div class="card">
+        <h3>3. Rechenbeispiel</h3>
+        <div id="formel-example"></div>
+      </div>
+
+      <div class="card">
+        <h3>Warum diese Methode?</h3>
+        <ul class="why">
+          <li><strong>Nachvollziehbar:</strong> Jeder Score lässt sich Kriterium für Kriterium begründen
+            (wichtig nach DSGVO Art.&nbsp;22 und AGG).</li>
+          <li><strong>Fair:</strong> Name, Geschlecht und Alter fließen nie ein und können nicht
+            zur Diskriminierung führen.</li>
+          <li><strong>Kontrollierbar:</strong> HR bestimmt die Gewichte selbst – keine undurchsichtige KI.</li>
+          <li><strong>Ehrlich:</strong> Der Score ist eine Prognose. Die finale Entscheidung trifft
+            immer ein Mensch.</li>
+        </ul>
+      </div>
+    </section>
+
   </main>
 
   <footer class="site-footer">
     <div class="wrap">
       <p>
-        <strong>Wichtiger Hinweis:</strong> Dieses Tool ist eine Entscheidungs<em>hilfe</em>,
-        kein automatischer Auswahlmechanismus. Es bewertet ausschließlich qualifikations-
-        und leistungsbezogene Merkmale. Die Verantwortung für die Einstellungsentscheidung
-        liegt bei den Mitarbeitenden der Personalabteilung.
+        <strong>Hinweis:</strong> Entscheidungs<em>hilfe</em>, kein Automatismus. Bewertet werden nur
+        qualifikations- und leistungsbezogene Merkmale. Die Verantwortung für die Einstellung
+        liegt bei der Personalabteilung.
       </p>
     </div>
   </footer>

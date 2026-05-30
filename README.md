@@ -34,9 +34,16 @@ Vorteile gerade im HR-Kontext:
 
 ## Bedienung
 
-1. Optional einen Kandidaten aus dem Datensatz laden **oder** Daten manuell eingeben.
-2. Unter *Einstellungen* die Gewichtungen anpassen (werden lokal im Browser gespeichert).
-3. Score, Empfehlung und Faktor-Aufschlüsselung aktualisieren sich live.
+Die App startet mit vier Bereichen (Kacheln auf der Startseite):
+
+1. **Bewerber bewerten** – Angaben eines neuen Bewerbers eingeben; Score, Empfehlung und
+   Faktor-Aufschlüsselung aktualisieren sich live.
+2. **Gewichtung anpassen** – pro Kriterium Gewicht (0–10) und Ein/Aus einstellen
+   (wird lokal im Browser gespeichert).
+3. **Datensätze ansehen** – alle vorhandenen Personen mit ihrem berechneten Score
+   (feste Werte, nicht editierbar), sortier- und durchsuchbar.
+4. **Formel erklärt** – Schritt-für-Schritt-Erläuterung inkl. der Teilscore-Tabellen
+   und einem Rechenbeispiel.
 
 ## Technik & Deployment
 
