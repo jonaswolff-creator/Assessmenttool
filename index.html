@@ -24,22 +24,22 @@
       <div class="home-grid">
         <button class="home-card" data-nav="bewerten" type="button">
           <span class="hc-icon">📝</span>
-          <span class="hc-title">Bewerber bewerten</span>
+          <span class="hc-title">Neuen Bewerber bewerten</span>
           <span class="hc-desc">Daten eines Bewerbers eingeben und den Eignungs-Score berechnen.</span>
         </button>
         <button class="home-card" data-nav="gewichtung" type="button">
           <span class="hc-icon">⚖️</span>
-          <span class="hc-title">Gewichtung anpassen</span>
+          <span class="hc-title">Gewichtung</span>
           <span class="hc-desc">Festlegen, wie wichtig jedes Kriterium ist – oder es ganz ausschließen.</span>
         </button>
         <button class="home-card" data-nav="daten" type="button">
           <span class="hc-icon">📊</span>
-          <span class="hc-title">Datensätze ansehen</span>
+          <span class="hc-title">Datensätze</span>
           <span class="hc-desc">Alle vorhandenen Personen mit ihrem berechneten Score durchsehen.</span>
         </button>
         <button class="home-card" data-nav="formel" type="button">
           <span class="hc-icon">🧮</span>
-          <span class="hc-title">Formel erklärt</span>
+          <span class="hc-title">Formel</span>
           <span class="hc-desc">Wie der Prozentwert genau zustande kommt – Schritt für Schritt.</span>
         </button>
       </div>
@@ -48,7 +48,7 @@
     <!-- ============ BEWERBER BEWERTEN ============ -->
     <section id="view-bewerten" class="view">
       <button class="back" data-nav="home" type="button">← Start</button>
-      <h2>Bewerber bewerten</h2>
+      <h2>Neuen Bewerber bewerten</h2>
       <p class="muted">Geben Sie die Angaben des Bewerbers ein. Der Score aktualisiert sich automatisch.</p>
 
       <div class="two-col">
@@ -89,7 +89,7 @@
     <section id="view-gewichtung" class="view">
       <button class="back" data-nav="home" type="button">← Start</button>
       <div class="settings-head">
-        <h2>Gewichtung anpassen</h2>
+        <h2>Gewichtung</h2>
         <button id="reset-weights" class="btn-secondary" type="button">Zurücksetzen</button>
       </div>
       <p class="muted">
@@ -106,9 +106,6 @@
       <h2>Datensätze</h2>
       <p class="muted">
         Alle vorhandenen Personen mit ihrem Score (berechnet mit den aktuellen Gewichtungen).
-        Diese Werte sind fest – sie stammen aus den Datensätzen und sind nicht editierbar.
-        <br><small>Hinweis: „Berufserfahrung" ist in den Datensätzen nicht enthalten und bleibt
-        hier deshalb unberücksichtigt. „Status" zeigt den tatsächlichen späteren Werdegang.</small>
       </p>
       <input id="daten-filter" class="filter" type="search" placeholder="Suchen (Name)…" />
       <div class="table-scroll">
@@ -117,17 +114,21 @@
             <tr>
               <th data-sort="name">Name</th>
               <th data-sort="quelle">Quelle</th>
-              <th data-sort="schul">Schule</th>
-              <th data-sort="beruf">Beruf</th>
-              <th data-sort="qual">Stufe</th>
-              <th data-sort="fz">Fehlz.</th>
+              <th data-sort="schul">Schulabschluss</th>
+              <th data-sort="beruf">Berufsabschluss</th>
+              <th data-sort="qual">Qualifikationsstufe</th>
+              <th data-sort="fz">Fehlzeiten (Monate)</th>
               <th data-sort="score" class="sorted-desc">Score ▾</th>
+              <th data-sort="ed">Einstellung</th>
+              <th data-sort="kd">Kündigung</th>
+              <th data-sort="bz">Dauer (Jahre)</th>
               <th data-sort="status">Status</th>
             </tr>
           </thead>
           <tbody></tbody>
         </table>
       </div>
+      <div id="daten-legende" class="legend"></div>
     </section>
 
     <!-- ============ FORMEL ============ -->
@@ -136,15 +137,19 @@
       <h2>Wie wird der Score berechnet?</h2>
 
       <div class="card">
-        <h3>1. Jedes Kriterium wird in einen Teilscore von 0–100&nbsp;% übersetzt</h3>
+        <div class="settings-head">
+          <h3>1. Jedes Kriterium wird in einen Teilscore von 0–100&nbsp;% übersetzt</h3>
+          <button id="reset-map" class="btn-secondary" type="button">Teilscores zurücksetzen</button>
+        </div>
         <p class="muted">
           Damit unterschiedliche Kriterien vergleichbar werden, bekommt jeder mögliche Wert
           einen festen Teilscore. <strong>0&nbsp;% = ungünstigster Wert, 100&nbsp;% = bester Wert.</strong>
         </p>
         <p class="muted small">
-          Bei <em>kategorialen</em> Kriterien (z.&nbsp;B. Berufsabschluss) ist das eine feste
-          Zuordnungstabelle. Bei <em>Zahlen</em>-Kriterien (z.&nbsp;B. Berufserfahrung) wird linear
-          zwischen einem Minimal- und Maximalwert umgerechnet.
+          Bei <em>kategorialen</em> Kriterien (z.&nbsp;B. Berufsabschluss) können Sie die Teilscores
+          unten <strong>selbst anpassen</strong> (z.&nbsp;B. Mittleren Schulabschluss von 60&nbsp;% auf
+          50&nbsp;% setzen). Bei <em>Zahlen</em>-Kriterien (z.&nbsp;B. Berufserfahrung) wird linear
+          zwischen Minimal- und Maximalwert umgerechnet.
         </p>
         <div id="formel-tables"></div>
       </div>
@@ -194,6 +199,7 @@
         qualifikations- und leistungsbezogene Merkmale. Die Verantwortung für die Einstellung
         liegt bei der Personalabteilung.
       </p>
+      <p class="ai-note">Zur Erstellung dieser Website wurde Claude Code als Hilfstool verwendet.</p>
     </div>
   </footer>
 
