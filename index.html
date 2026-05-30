@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>HR Eignungs-Score · Bewerberauswahl</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="site-header">
+    <div class="wrap">
+      <h1>HR&nbsp;Eignungs-Score</h1>
+      <p class="tagline">Transparente Entscheidungsunterstützung für die Bewerberauswahl</p>
+    </div>
+  </header>
+
+  <main class="wrap layout">
+    <!-- LINKE SPALTE: Eingabe -->
+    <section class="card" id="input-card">
+      <h2>Bewerberdaten</h2>
+
+      <label class="field">
+        <span>Kandidat aus Datensatz laden <small>(optional)</small></span>
+        <select id="dataset-select">
+          <option value="">— neuen Bewerber manuell eingeben —</option>
+        </select>
+      </label>
+
+      <div id="feature-inputs" class="feature-inputs"></div>
+
+      <details class="protected-box">
+        <summary>Geschützte Merkmale (nicht bewertet)</summary>
+        <p class="muted small">
+          Diese Merkmale fließen aus rechtlichen und ethischen Gründen (AGG, DSGVO Art.&nbsp;22)
+          <strong>nicht</strong> in den Score ein. Sie dienen nur der Information.
+        </p>
+        <div id="protected-info" class="protected-info"></div>
+      </details>
+    </section>
+
+    <!-- RECHTE SPALTE: Ergebnis -->
+    <section class="card" id="result-card">
+      <h2>Eignungs-Score</h2>
+      <div class="gauge">
+        <svg viewBox="0 0 120 120" class="gauge-svg">
+          <circle class="gauge-bg" cx="60" cy="60" r="52" />
+          <circle id="gauge-fg" class="gauge-fg" cx="60" cy="60" r="52" />
+        </svg>
+        <div class="gauge-center">
+          <span id="score-value">0%</span>
+          <span id="score-label" class="score-label">—</span>
+        </div>
+      </div>
+
+      <p id="recommendation" class="recommendation"></p>
+
+      <h3>Wie kommt dieser Score zustande?</h3>
+      <table class="breakdown" id="breakdown">
+        <thead>
+          <tr><th>Faktor</th><th>Wert</th><th>Teil&shy;score</th><th>Gewicht</th><th>Beitrag</th></tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+
+      <div id="reference" class="reference hidden">
+        <h3>Realitäts-Check <small>(tatsächlicher Werdegang)</small></h3>
+        <div id="reference-body"></div>
+        <p class="muted small">
+          Hinweis: Der Score ist eine Prognose aus wenigen Merkmalen. Der reale Werdegang
+          zeigt, dass Eignung sich nicht vollständig vorhersagen lässt – die finale
+          Entscheidung trifft immer ein Mensch.
+        </p>
+      </div>
+    </section>
+
+    <!-- EINSTELLUNGEN -->
+    <section class="card full" id="settings-card">
+      <div class="settings-head">
+        <h2>Einstellungen: Gewichtung der Faktoren</h2>
+        <button id="reset-weights" class="btn-secondary" type="button">Zurücksetzen</button>
+      </div>
+      <p class="muted">
+        Legen Sie fest, wie wichtig jeder Faktor ist (Gewicht&nbsp;0–10) und ob er
+        überhaupt berücksichtigt wird. Faktoren mit Gewicht&nbsp;0 oder deaktivierte
+        Faktoren fließen nicht ein.
+      </p>
+      <div id="weight-controls" class="weight-controls"></div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="wrap">
+      <p>
+        <strong>Wichtiger Hinweis:</strong> Dieses Tool ist eine Entscheidungs<em>hilfe</em>,
+        kein automatischer Auswahlmechanismus. Es bewertet ausschließlich qualifikations-
+        und leistungsbezogene Merkmale. Die Verantwortung für die Einstellungsentscheidung
+        liegt bei den Mitarbeitenden der Personalabteilung.
+      </p>
+    </div>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>
