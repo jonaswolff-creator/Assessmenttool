@@ -311,7 +311,8 @@ function renderDataTable() {
       schul: c.schulabschluss, beruf: c.berufsabschluss, qual: c.qualifikationsstufe,
       fz: c.fehlzeiten ?? 0, fzrate: rate,
       ed: c.einstellungsdatum || '', kd: c.kuendigungsdatum || '',
-      score: sumW === 0 ? -1 : score
+      score: sumW === 0 ? -1 : score,
+      _cand: c
     };
   }).filter(r => r.name.toLowerCase().includes(filter));
 
@@ -327,6 +328,9 @@ function renderDataTable() {
   tbody.innerHTML = '';
   rows.forEach(r => {
     const tr = document.createElement('tr');
+    tr.className = 'clickable';
+    tr.title = 'Klicken: Score-Aufschlüsselung dieser Person ansehen';
+    tr.onclick = () => openBewerten(r._cand);
     const sc = r.score < 0
       ? '<span class="muted">–</span>'
       : `<span class="score-pill" style="background:${pill(r.score)}">${Math.round(r.score)}%</span>`;
@@ -464,6 +468,32 @@ document.getElementById('reset-map').onclick = () => {
 };
 
 // --- Navigation ------------------------------------------------------------
+// Öffnet den Bewerten-Bereich – leer oder vorausgefüllt mit einem Datensatz.
+function openBewerten(cand) {
+  const src = document.getElementById('bewerten-source');
+  if (cand) {
+    const rate = cand.betriebszugehoerigkeit > 0
+      ? cand.fehlzeiten / cand.betriebszugehoerigkeit : cand.fehlzeiten;
+    applicant = {
+      schulabschluss: cand.schulabschluss, berufsabschluss: cand.berufsabschluss,
+      qualifikationsstufe: cand.qualifikationsstufe,
+      berufserfahrung: null, // nicht im Datensatz enthalten
+      fehlzeiten: rate == null ? null : Math.round(rate * 10) / 10,
+      gehaltEinstieg: cand.gehaltEinstieg
+    };
+    src.hidden = false;
+    src.innerHTML = `Geladen aus Datensatz: <strong>${cand.nachname}, ${cand.vorname}</strong> ` +
+      `(${cand.quelle}). Fehlzeiten als Rate pro Jahr; Berufserfahrung ist im Datensatz nicht ` +
+      `enthalten. Werte sind editierbar. <button type="button" id="bewerten-clear">leeren</button>`;
+  } else {
+    applicant = blankApplicant();
+    src.hidden = true; src.innerHTML = '';
+  }
+  showView('bewerten');
+  const clr = document.getElementById('bewerten-clear');
+  if (clr) clr.onclick = () => openBewerten();
+}
+
 function showView(name) {
   document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
   const el = document.getElementById('view-' + name);
@@ -475,7 +505,10 @@ function showView(name) {
   window.scrollTo(0, 0);
 }
 document.querySelectorAll('[data-nav]').forEach(b => {
-  b.onclick = () => showView(b.dataset.nav);
+  b.onclick = () => {
+    if (b.dataset.nav === 'bewerten') openBewerten();   // leeres Formular für neuen Bewerber
+    else showView(b.dataset.nav);
+  };
 });
 
 // --- Start -----------------------------------------------------------------

@@ -147,7 +147,19 @@ select, input[type="number"], input.filter {
 .data-table th, .data-table td { padding: 9px 12px; text-align: left; border-bottom: 1px solid var(--line); white-space: nowrap; }
 .data-table thead th { position: sticky; top: 0; background:#f8fafc; cursor: pointer; user-select: none; font-size: .82rem; color: var(--muted); }
 .data-table thead th:hover { color: var(--ink); }
-.data-table tbody tr:hover { background: #f8fafc; }
+.data-table tbody tr:hover { background: #eef2ff; }
+.data-table tbody tr.clickable { cursor: pointer; }
+
+/* Herkunfts-Hinweis im Bewerten-Bereich */
+.bewerten-source {
+  background: #f1f5ff; border: 1px solid #dbe4ff; border-radius: 10px;
+  padding: 9px 14px; margin: 0 0 16px; font-size: .88rem; color: var(--ink);
+}
+.bewerten-source strong { color: var(--accent); }
+#bewerten-clear {
+  background: none; border: none; color: var(--accent); cursor: pointer;
+  font: inherit; text-decoration: underline; padding: 0; margin-left: 4px;
+}
 .score-pill { display:inline-block; min-width: 46px; text-align:center; padding:2px 8px; border-radius:999px; font-weight:700; font-size:.85rem; }
 .badge { display:inline-block; padding:2px 9px; border-radius:999px; font-size:.78rem; font-weight:600; }
 .badge.ok { background:#ecfdf3; color:#15803d; }
