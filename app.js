@@ -53,11 +53,13 @@ const FEATURES = [
 
 const STORAGE_KEY = 'hr-score-weights-v1';
 const MAP_KEY = 'hr-score-map-v1';
+const NUM_KEY = 'hr-score-num-v1';
 let candidates = [];                 // expandierte Datensätze
 let config = loadConfig();
 let optMap = loadOptMap();           // anpassbare Teilscores je kategorialem Wert
+let numMap = loadNumMap();           // anpassbare Grenzen je Zahlen-Kriterium
 let applicant = blankApplicant();    // manueller Bewerber (Bereich „Bewerten")
-let sortState = { key: 'nachname', dir: 'asc' };
+let sortState = { key: 'score', dir: 'desc' };
 
 // --- Konfiguration ---------------------------------------------------------
 function defaultConfig() {
@@ -100,6 +102,24 @@ function loadOptMap() {
 }
 function saveOptMap() { try { localStorage.setItem(MAP_KEY, JSON.stringify(optMap)); } catch {} }
 
+// Anpassbare Grenzen der Zahlen-Kriterien: { featureKey: { min, max } }
+function defaultNumMap() {
+  const m = {};
+  FEATURES.forEach(f => { if (f.type === 'numeric') m[f.key] = { min: f.min, max: f.max }; });
+  return m;
+}
+function loadNumMap() {
+  try {
+    const saved = JSON.parse(localStorage.getItem(NUM_KEY));
+    const base = defaultNumMap();
+    if (saved) for (const fk in base)
+      for (const b of ['min', 'max'])
+        if (saved[fk] && typeof saved[fk][b] === 'number') base[fk][b] = saved[fk][b];
+    return base;
+  } catch { return defaultNumMap(); }
+}
+function saveNumMap() { try { localStorage.setItem(NUM_KEY, JSON.stringify(numMap)); } catch {} }
+
 // --- Kernlogik: Teilscore + Gesamtscore -----------------------------------
 function normalize(feature, value) {
   if (value === '' || value === null || value === undefined) return null;
@@ -109,7 +129,9 @@ function normalize(feature, value) {
   }
   const v = Number(value);
   if (!isFinite(v)) return null;
-  const t = (v - feature.min) / (feature.max - feature.min);
+  const nm = numMap[feature.key] || feature;
+  if (nm.max === nm.min) return null;
+  const t = (v - nm.min) / (nm.max - nm.min);
   const clamped = Math.max(0, Math.min(1, t));
   return feature.higherIsBetter ? clamped : 1 - clamped;
 }
@@ -279,14 +301,13 @@ function renderDataTable() {
   const rows = candidates.map(c => {
     const { score, sumW } = scoreOf(c);
     return {
-      nachname: c.nachname, vorname: c.vorname, geschlecht: c.geschlecht,
-      alter: c.alter ?? -1,
+      name: `${c.nachname}, ${c.vorname}`, quelle: c.quelle,
+      schul: c.schulabschluss, beruf: c.berufsabschluss, qual: c.qualifikationsstufe,
+      fz: c.fehlzeiten ?? 0,
       ed: c.einstellungsdatum || '', kd: c.kuendigungsdatum || '',
-      fz: c.fehlzeiten ?? 0, ga: c.gehaltAktuell ?? -1, ge: c.gehaltEinstieg ?? -1,
-      qual: c.qualifikationsstufe, schul: c.schulabschluss, beruf: c.berufsabschluss,
       score: sumW === 0 ? -1 : score
     };
-  }).filter(r => `${r.nachname} ${r.vorname}`.toLowerCase().includes(filter));
+  }).filter(r => r.name.toLowerCase().includes(filter));
 
   const dir = sortState.dir === 'asc' ? 1 : -1;
   rows.sort((a, b) => {
@@ -295,6 +316,7 @@ function renderDataTable() {
     return (x - y) * dir;
   });
 
+  const SL = { OS:'o. Abschl.', MS:'Mittlere R.', AS:'Abitur' };
   const tbody = document.querySelector('#data-table tbody');
   tbody.innerHTML = '';
   rows.forEach(r => {
@@ -302,13 +324,10 @@ function renderDataTable() {
     const sc = r.score < 0
       ? '<span class="muted">–</span>'
       : `<span class="score-pill" style="background:${pill(r.score)}">${Math.round(r.score)}%</span>`;
-    tr.innerHTML = `<td>${r.nachname}</td><td>${r.vorname}</td><td>${r.geschlecht}</td>
-      <td>${r.alter < 0 ? '—' : r.alter}</td>
-      <td>${fmtDate(r.ed)}</td><td>${fmtDate(r.kd)}</td>
+    tr.innerHTML = `<td>${r.name}</td><td>${r.quelle}</td>
+      <td>${SL[r.schul] || r.schul}</td><td>${r.beruf}</td><td>${r.qual}</td>
       <td>${r.fz}</td>
-      <td>${r.ga < 0 ? '—' : r.ga.toLocaleString('de-DE')}</td>
-      <td>${r.ge < 0 ? '—' : r.ge.toLocaleString('de-DE')}</td>
-      <td>${r.qual}</td><td>${r.schul}</td><td>${r.beruf}</td>
+      <td>${fmtDate(r.ed)}</td><td>${fmtDate(r.kd)}</td>
       <td>${sc}</td>`;
     tbody.appendChild(tr);
   });
@@ -356,17 +375,23 @@ function buildFormel() {
         <thead><tr><th>Wert</th><th>Teilscore</th></tr></thead><tbody>${rows}</tbody>`;
     } else {
       const dir = f.higherIsBetter ? 'mehr ist besser' : 'weniger ist besser';
-      t.innerHTML = `<caption>${f.label} (Zahl, ${dir})</caption>
+      const unit = f.unit.split('/')[0];
+      const lowBound = f.higherIsBetter ? 'min' : 'max';  // Wert, der 0 % ergibt
+      const highBound = f.higherIsBetter ? 'max' : 'min'; // Wert, der 100 % ergibt
+      const nm = numMap[f.key];
+      const inp = (b) => `<input type="number" step="any" value="${nm[b]}"
+          data-f="${f.key}" data-b="${b}" class="num-input"> ${unit}`;
+      t.innerHTML = `<caption>${f.label} (Zahl, ${dir} – anpassbar)</caption>
         <thead><tr><th>Wert</th><th>Teilscore</th></tr></thead><tbody>
-        <tr><td>${f.higherIsBetter ? f.min : f.max} ${f.unit.split('/')[0]} (ungünstig)</td><td class="ts">0%</td></tr>
+        <tr><td>${inp(lowBound)} (ungünstig)</td><td class="ts">0%</td></tr>
         <tr><td>dazwischen</td><td class="ts">linear</td></tr>
-        <tr><td>${f.higherIsBetter ? f.max+'+' : f.min} ${f.unit.split('/')[0]} (optimal)</td><td class="ts">100%</td></tr>
+        <tr><td>${inp(highBound)} (optimal)</td><td class="ts">100%</td></tr>
         </tbody>`;
     }
     host.appendChild(t);
   });
 
-  // Eingaben für editierbare Teilscores verdrahten
+  // Eingaben für editierbare Teilscores (kategorial) verdrahten
   host.querySelectorAll('.ts-input').forEach(inp => {
     inp.oninput = () => {
       let v = Number(inp.value);
@@ -374,8 +399,19 @@ function buildFormel() {
       v = Math.max(0, Math.min(100, v));
       optMap[inp.dataset.f][inp.dataset.o] = v / 100;
       saveOptMap();
-      renderFormelExample();  // Beispiel neu rechnen (ohne Tabellen-Rebuild)
-      renderBewerten();       // Score im Bewerten-Bereich aktualisieren
+      renderFormelExample();
+      renderBewerten();
+    };
+  });
+  // Eingaben für editierbare Grenzen (Zahlen) verdrahten
+  host.querySelectorAll('.num-input').forEach(inp => {
+    inp.oninput = () => {
+      const v = Number(inp.value);
+      if (!isFinite(v)) return;
+      numMap[inp.dataset.f][inp.dataset.b] = v;
+      saveNumMap();
+      renderFormelExample();
+      renderBewerten();
     };
   });
 
@@ -411,6 +447,7 @@ function renderFormelExample() {
 
 document.getElementById('reset-map').onclick = () => {
   optMap = defaultOptMap(); saveOptMap();
+  numMap = defaultNumMap(); saveNumMap();
   buildFormel(); renderBewerten();
 };
 
