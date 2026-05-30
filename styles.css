@@ -19,6 +19,9 @@ body {
   background: var(--bg);
   color: var(--ink);
   line-height: 1.5;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
 }
 .wrap { max-width: 1000px; margin: 0 auto; padding: 0 20px; }
 h2 { font-size: 1.4rem; margin: 6px 0 4px; }
@@ -35,7 +38,7 @@ h3 { font-size: 1.05rem; margin: 0 0 10px; }
 }
 .tagline { margin: 4px 0 0; opacity: .9; }
 
-main { padding: 26px 0 40px; }
+main { padding: 26px 0 40px; flex: 1 0 auto; }
 
 /* View-Umschaltung */
 .view { display: none; }
@@ -191,8 +194,10 @@ select, input[type="number"], input.filter {
 .legend-block { margin: 3px 0; }
 .legend-block strong { color: var(--ink); }
 
-/* Editierbare Werte in der Formel-Ansicht */
-.ts-input, .num-input { width: 56px; padding: 4px 6px; text-align: right; border:1px solid var(--line); border-radius: 7px; font-family: inherit; font-size: .88rem; }
+/* Editierbare Werte in der Formel-Ansicht – alle gleich groß */
+.ts-input, .num-input { box-sizing: border-box; width: 56px; padding: 4px 6px; text-align: right; border:1px solid var(--line); border-radius: 7px; font-family: inherit; font-size: .88rem; }
+.num-input::-webkit-outer-spin-button, .num-input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+.num-input { -moz-appearance: textfield; appearance: textfield; }
 
 @media (max-width: 760px) {
   .home-grid, .two-col, .weight-controls { grid-template-columns: 1fr; }
