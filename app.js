@@ -40,9 +40,6 @@ const FEATURES = [
     defaultWeight: 4, enabled: true,
     desc: 'Fehlzeit pro Jahr. Bei bestehenden Mitarbeitenden wird die Gesamt-Fehlzeit ' +
           'auf die Beschäftigungsdauer umgerechnet (Monate/Jahr). Weniger ist besser.',
-    note: 'Hinweis: Bei vorhandenen Datensätzen wird die Rate berechnet als ' +
-          'Gesamt-Fehlzeit ÷ Beschäftigungsjahre. So zählt 2 Monate in 20 Jahren (0,1/Jahr) ' +
-          'viel besser als 2 Monate in 1 Jahr (2,0/Jahr).',
     min: 0, max: 3, unit: 'Monate/Jahr', higherIsBetter: false
   },
   {
