@@ -300,6 +300,13 @@ function fmtDate(iso) {
   const [y, m, d] = iso.split('-');
   return `${d}.${m}.${y}`;
 }
+// Betriebszugehörigkeit in Jahren – bei noch Beschäftigten bis HEUTE gerechnet.
+function tenureYears(ed, kd) {
+  if (!ed) return null;
+  const start = new Date(ed);
+  const end = kd ? new Date(kd) : new Date();   // ohne Kündigung: aktuelles Datum
+  return Math.round(((end - start) / (365.25 * 86400000)) * 10) / 10;
+}
 // Wandelt einen Datensatz in ein bewertbares Bewerber-Objekt um.
 // Berufserfahrung wird aus der Betriebszugehörigkeit abgeleitet,
 // Fehlzeiten auf eine Rate pro Jahr normiert.
@@ -529,7 +536,7 @@ async function init() {
       schulabschluss: c.sa, berufsabschluss: c.ba, qualifikationsstufe: c.qs,
       fehlzeiten: c.fz, gehaltEinstieg: c.ge, gehaltAktuell: c.ga,
       einstellungsdatum: c.ed, kuendigungsdatum: c.kd,
-      betriebszugehoerigkeit: c.bz, gekuendigt: !!c.k
+      betriebszugehoerigkeit: tenureYears(c.ed, c.kd), gekuendigt: !!c.k
     }));
   } catch (e) {
     console.warn('Datensatz konnte nicht geladen werden:', e);
