@@ -398,7 +398,7 @@ function buildFormel() {
          <td class="ts"><input type="number" min="0" max="100" step="1"
             value="${Math.round((optMap[f.key][k]) * 100)}"
             data-f="${f.key}" data-o="${k}" class="ts-input"> %</td></tr>`).join('');
-      t.innerHTML = `<caption>${f.label} (kategorial – anpassbar)</caption>
+      t.innerHTML = `<caption>${f.label} (kategorial)</caption>
         <thead><tr><th>Wert</th><th>Teilscore</th></tr></thead><tbody>${rows}</tbody>`;
     } else {
       const dir = f.higherIsBetter ? 'mehr ist besser' : 'weniger ist besser';
@@ -408,7 +408,7 @@ function buildFormel() {
       const nm = numMap[f.key];
       const inp = (b) => `<input type="number" step="any" value="${nm[b]}"
           data-f="${f.key}" data-b="${b}" class="num-input"> ${unit}`;
-      t.innerHTML = `<caption>${f.label} (Zahl, ${dir} – anpassbar)</caption>
+      t.innerHTML = `<caption>${f.label} (Zahl, ${dir})</caption>
         <thead><tr><th>Wert</th><th>Teilscore</th></tr></thead><tbody>
         <tr><td>${inp(lowBound)} (ungünstig)</td><td class="ts">0%</td></tr>
         <tr><td>dazwischen</td><td class="ts">linear</td></tr>
