@@ -57,7 +57,7 @@ let candidates = [];                 // expandierte Datensätze
 let config = loadConfig();
 let optMap = loadOptMap();           // anpassbare Teilscores je kategorialem Wert
 let applicant = blankApplicant();    // manueller Bewerber (Bereich „Bewerten")
-let sortState = { key: 'score', dir: 'desc' };
+let sortState = { key: 'nachname', dir: 'asc' };
 
 // --- Konfiguration ---------------------------------------------------------
 function defaultConfig() {
@@ -279,16 +279,14 @@ function renderDataTable() {
   const rows = candidates.map(c => {
     const { score, sumW } = scoreOf(c);
     return {
-      name: `${c.nachname}, ${c.vorname}`,
-      quelle: c.quelle,
-      schul: c.schulabschluss, beruf: c.berufsabschluss, qual: c.qualifikationsstufe,
-      fz: c.fehlzeiten ?? 0,
-      score: sumW === 0 ? -1 : score,
+      nachname: c.nachname, vorname: c.vorname, geschlecht: c.geschlecht,
+      alter: c.alter ?? -1,
       ed: c.einstellungsdatum || '', kd: c.kuendigungsdatum || '',
-      bz: c.betriebszugehoerigkeit ?? -1,
-      status: c.gekuendigt ? 1 : 0
+      fz: c.fehlzeiten ?? 0, ga: c.gehaltAktuell ?? -1, ge: c.gehaltEinstieg ?? -1,
+      qual: c.qualifikationsstufe, schul: c.schulabschluss, beruf: c.berufsabschluss,
+      score: sumW === 0 ? -1 : score
     };
-  }).filter(r => r.name.toLowerCase().includes(filter));
+  }).filter(r => `${r.nachname} ${r.vorname}`.toLowerCase().includes(filter));
 
   const dir = sortState.dir === 'asc' ? 1 : -1;
   rows.sort((a, b) => {
@@ -304,14 +302,14 @@ function renderDataTable() {
     const sc = r.score < 0
       ? '<span class="muted">–</span>'
       : `<span class="score-pill" style="background:${pill(r.score)}">${Math.round(r.score)}%</span>`;
-    const status = r.status
-      ? '<span class="badge left">ausgeschieden</span>'
-      : '<span class="badge ok">im Unternehmen</span>';
-    tr.innerHTML = `<td>${r.name}</td><td>${r.quelle}</td>
-      <td>${r.schul}</td><td>${r.beruf}</td><td>${r.qual}</td>
-      <td>${r.fz}</td><td>${sc}</td>
+    tr.innerHTML = `<td>${r.nachname}</td><td>${r.vorname}</td><td>${r.geschlecht}</td>
+      <td>${r.alter < 0 ? '—' : r.alter}</td>
       <td>${fmtDate(r.ed)}</td><td>${fmtDate(r.kd)}</td>
-      <td>${r.bz < 0 ? '—' : r.bz}</td><td>${status}</td>`;
+      <td>${r.fz}</td>
+      <td>${r.ga < 0 ? '—' : r.ga.toLocaleString('de-DE')}</td>
+      <td>${r.ge < 0 ? '—' : r.ge.toLocaleString('de-DE')}</td>
+      <td>${r.qual}</td><td>${r.schul}</td><td>${r.beruf}</td>
+      <td>${sc}</td>`;
     tbody.appendChild(tr);
   });
 }
