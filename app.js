@@ -40,6 +40,9 @@ const FEATURES = [
     defaultWeight: 4, enabled: true,
     desc: 'Fehlzeit pro Jahr. Bei bestehenden Mitarbeitenden wird die Gesamt-Fehlzeit ' +
           'auf die Beschäftigungsdauer umgerechnet (Monate/Jahr). Weniger ist besser.',
+    note: 'Hinweis: Bei vorhandenen Datensätzen wird die Rate berechnet als ' +
+          'Gesamt-Fehlzeit ÷ Beschäftigungsjahre. So zählt 2 Monate in 20 Jahren (0,1/Jahr) ' +
+          'viel besser als 2 Monate in 1 Jahr (2,0/Jahr).',
     min: 0, max: 3, unit: 'Monate/Jahr', higherIsBetter: false
   },
   {
@@ -306,7 +309,7 @@ function renderDataTable() {
     return {
       name: `${c.nachname}, ${c.vorname}`, quelle: c.quelle,
       schul: c.schulabschluss, beruf: c.berufsabschluss, qual: c.qualifikationsstufe,
-      fz: c.fehlzeiten ?? 0,
+      fz: c.fehlzeiten ?? 0, fzrate: rate,
       ed: c.einstellungsdatum || '', kd: c.kuendigungsdatum || '',
       score: sumW === 0 ? -1 : score
     };
@@ -330,6 +333,7 @@ function renderDataTable() {
     tr.innerHTML = `<td>${r.name}</td><td>${r.quelle}</td>
       <td>${SL[r.schul] || r.schul}</td><td>${r.beruf}</td><td>${r.qual}</td>
       <td>${r.fz}</td>
+      <td>${r.fzrate.toLocaleString('de-DE', { minimumFractionDigits: 1, maximumFractionDigits: 1 })}</td>
       <td>${fmtDate(r.ed)}</td><td>${fmtDate(r.kd)}</td>
       <td>${sc}</td>`;
     tbody.appendChild(tr);
@@ -378,7 +382,7 @@ function buildFormel() {
         <thead><tr><th>Wert</th><th>Teilscore</th></tr></thead><tbody>${rows}</tbody>`;
     } else {
       const dir = f.higherIsBetter ? 'mehr ist besser' : 'weniger ist besser';
-      const unit = f.unit.split('/')[0];
+      const unit = f.unit;
       const lowBound = f.higherIsBetter ? 'min' : 'max';  // Wert, der 0 % ergibt
       const highBound = f.higherIsBetter ? 'max' : 'min'; // Wert, der 100 % ergibt
       const nm = numMap[f.key];
@@ -392,6 +396,11 @@ function buildFormel() {
         </tbody>`;
     }
     host.appendChild(t);
+    if (f.note) {
+      const n = document.createElement('p');
+      n.className = 'map-note muted small'; n.textContent = f.note;
+      host.appendChild(n);
+    }
   });
 
   // Eingaben für editierbare Teilscores (kategorial) verdrahten
