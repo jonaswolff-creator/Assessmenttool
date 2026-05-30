@@ -469,7 +469,7 @@ function renderFormelExample() {
     <p class="muted small">Beispielbewerber mit der <strong>Standard-Gewichtung</strong>
     (Gehalt deaktiviert). Ändern Sie oben einen Teilscore, ändert sich dieses Ergebnis mit:</p>
     <table class="example-table">
-      <thead><tr><th>Kriterium</th><th>Wert</th><th>Teilscore</th><th>Gewicht</th><th>Gew.×Teilscore</th></tr></thead>
+      <thead><tr><th>Kriterium</th><th>Wert</th><th>Teilscore</th><th>Gewicht</th><th>Gewicht×Teilscore</th></tr></thead>
       <tbody>${body}</tbody>
       <tfoot><tr><td colspan="3">Summen</td><td>${sumW}</td><td>${sumWN.toFixed(2)}</td></tr></tfoot>
     </table>
