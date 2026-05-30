@@ -52,8 +52,10 @@ const FEATURES = [
 ];
 
 const STORAGE_KEY = 'hr-score-weights-v1';
+const MAP_KEY = 'hr-score-map-v1';
 let candidates = [];                 // expandierte Datensätze
 let config = loadConfig();
+let optMap = loadOptMap();           // anpassbare Teilscores je kategorialem Wert
 let applicant = blankApplicant();    // manueller Bewerber (Bereich „Bewerten")
 let sortState = { key: 'score', dir: 'desc' };
 
@@ -80,11 +82,30 @@ function blankApplicant() {
   return a;
 }
 
+// Anpassbare Teilscores (Bereich „Formel"): { featureKey: { optionKey: 0..1 } }
+function defaultOptMap() {
+  const m = {};
+  FEATURES.forEach(f => { if (f.type === 'ordinal') m[f.key] = { ...f.options }; });
+  return m;
+}
+function loadOptMap() {
+  try {
+    const saved = JSON.parse(localStorage.getItem(MAP_KEY));
+    const base = defaultOptMap();
+    if (saved) for (const fk in base)
+      for (const ok in base[fk])
+        if (saved[fk] && typeof saved[fk][ok] === 'number') base[fk][ok] = saved[fk][ok];
+    return base;
+  } catch { return defaultOptMap(); }
+}
+function saveOptMap() { try { localStorage.setItem(MAP_KEY, JSON.stringify(optMap)); } catch {} }
+
 // --- Kernlogik: Teilscore + Gesamtscore -----------------------------------
 function normalize(feature, value) {
   if (value === '' || value === null || value === undefined) return null;
   if (feature.type === 'ordinal') {
-    return (value in feature.options) ? feature.options[value] : null;
+    const map = optMap[feature.key] || feature.options;
+    return (value in map) ? map[value] : null;
   }
   const v = Number(value);
   if (!isFinite(v)) return null;
@@ -248,6 +269,11 @@ document.getElementById('reset-weights').onclick = () => {
 };
 
 // --- Bereich: Datensätze ---------------------------------------------------
+function fmtDate(iso) {
+  if (!iso) return '—';
+  const [y, m, d] = iso.split('-');
+  return `${d}.${m}.${y}`;
+}
 function renderDataTable() {
   const filter = (document.getElementById('daten-filter').value || '').toLowerCase();
   const rows = candidates.map(c => {
@@ -258,6 +284,8 @@ function renderDataTable() {
       schul: c.schulabschluss, beruf: c.berufsabschluss, qual: c.qualifikationsstufe,
       fz: c.fehlzeiten ?? 0,
       score: sumW === 0 ? -1 : score,
+      ed: c.einstellungsdatum || '', kd: c.kuendigungsdatum || '',
+      bz: c.betriebszugehoerigkeit ?? -1,
       status: c.gekuendigt ? 1 : 0
     };
   }).filter(r => r.name.toLowerCase().includes(filter));
@@ -269,7 +297,6 @@ function renderDataTable() {
     return (x - y) * dir;
   });
 
-  const SL = { OS:'o. Abschl.', MS:'Mittlere R.', AS:'Abitur' };
   const tbody = document.querySelector('#data-table tbody');
   tbody.innerHTML = '';
   rows.forEach(r => {
@@ -281,13 +308,23 @@ function renderDataTable() {
       ? '<span class="badge left">ausgeschieden</span>'
       : '<span class="badge ok">im Unternehmen</span>';
     tr.innerHTML = `<td>${r.name}</td><td>${r.quelle}</td>
-      <td>${SL[r.schul] || r.schul}</td><td>${r.beruf}</td><td>${r.qual}</td>
-      <td>${r.fz}</td><td>${sc}</td><td>${status}</td>`;
+      <td>${r.schul}</td><td>${r.beruf}</td><td>${r.qual}</td>
+      <td>${r.fz}</td><td>${sc}</td>
+      <td>${fmtDate(r.ed)}</td><td>${fmtDate(r.kd)}</td>
+      <td>${r.bz < 0 ? '—' : r.bz}</td><td>${status}</td>`;
     tbody.appendChild(tr);
   });
 }
 function pill(score) {
   return score >= 70 ? '#dcfce7' : score >= 50 ? '#fef3c7' : '#fee2e2';
+}
+function buildLegend() {
+  const host = document.getElementById('daten-legende');
+  if (!host) return;
+  const block = f => `<div class="legend-block"><strong>${f.label}:</strong> ` +
+    Object.keys(f.options).map(k => `${k} = ${f.optionLabels[k]}`).join(' · ') + '</div>';
+  host.innerHTML = '<div class="legend-title">Legende</div>' +
+    FEATURES.filter(f => f.type === 'ordinal').map(block).join('');
 }
 document.getElementById('daten-filter').oninput = renderDataTable;
 document.querySelectorAll('#data-table thead th').forEach(th => {
@@ -312,9 +349,12 @@ function buildFormel() {
     const t = document.createElement('table');
     t.className = 'map-table';
     if (f.type === 'ordinal') {
-      const rows = Object.keys(f.options)
-        .map(k => `<tr><td>${f.optionLabels[k]}</td><td class="ts">${Math.round(f.options[k]*100)}%</td></tr>`).join('');
-      t.innerHTML = `<caption>${f.label} (kategorial)</caption>
+      const rows = Object.keys(f.options).map(k =>
+        `<tr><td>${f.optionLabels[k]}</td>
+         <td class="ts"><input type="number" min="0" max="100" step="1"
+            value="${Math.round((optMap[f.key][k]) * 100)}"
+            data-f="${f.key}" data-o="${k}" class="ts-input"> %</td></tr>`).join('');
+      t.innerHTML = `<caption>${f.label} (kategorial – anpassbar)</caption>
         <thead><tr><th>Wert</th><th>Teilscore</th></tr></thead><tbody>${rows}</tbody>`;
     } else {
       const dir = f.higherIsBetter ? 'mehr ist besser' : 'weniger ist besser';
@@ -328,28 +368,53 @@ function buildFormel() {
     host.appendChild(t);
   });
 
+  // Eingaben für editierbare Teilscores verdrahten
+  host.querySelectorAll('.ts-input').forEach(inp => {
+    inp.oninput = () => {
+      let v = Number(inp.value);
+      if (!isFinite(v)) return;
+      v = Math.max(0, Math.min(100, v));
+      optMap[inp.dataset.f][inp.dataset.o] = v / 100;
+      saveOptMap();
+      renderFormelExample();  // Beispiel neu rechnen (ohne Tabellen-Rebuild)
+      renderBewerten();       // Score im Bewerten-Bereich aktualisieren
+    };
+  });
+
+  renderFormelExample();
+}
+
+function renderFormelExample() {
+  const host = document.getElementById('formel-example');
+  if (!host) return;
   // Rechenbeispiel mit Standard-Gewichtung
   const ex = { schulabschluss:'AS', berufsabschluss:'ST', qualifikationsstufe:'S',
                berufserfahrung:8, fehlzeiten:1, gehaltEinstieg:null };
   const cfg = defaultConfig();
-  const { score, rows, sumW } = scoreOf(ex, cfg);
+  const { score, rows } = scoreOf(ex, cfg);
   const active = rows.filter(r => r.active);
   const body = active.map(r =>
     `<tr><td>${r.feature.label}</td><td>${fmtValue(r.feature, r.value)}</td>
      <td>${Math.round(r.norm*100)}%</td><td>${r.weight}</td>
      <td>${(r.weight*r.norm).toFixed(2)}</td></tr>`).join('');
+  const sumW = active.reduce((s,r)=>s+r.weight,0);
   const sumWN = active.reduce((s,r)=>s+r.weight*r.norm,0);
-  document.getElementById('formel-example').innerHTML = `
+  host.innerHTML = `
     <p class="muted small">Beispielbewerber mit der <strong>Standard-Gewichtung</strong>
-    (Gehalt deaktiviert):</p>
+    (Gehalt deaktiviert). Ändern Sie oben einen Teilscore, ändert sich dieses Ergebnis mit:</p>
     <table class="example-table">
       <thead><tr><th>Kriterium</th><th>Wert</th><th>Teilscore</th><th>Gewicht</th><th>Gew.×Teilscore</th></tr></thead>
       <tbody>${body}</tbody>
-      <tfoot><tr><td colspan="3">Summen</td><td>${active.reduce((s,r)=>s+r.weight,0)}</td><td>${sumWN.toFixed(2)}</td></tr></tfoot>
+      <tfoot><tr><td colspan="3">Summen</td><td>${sumW}</td><td>${sumWN.toFixed(2)}</td></tr></tfoot>
     </table>
-    <p>Score = ${sumWN.toFixed(2)} ÷ ${active.reduce((s,r)=>s+r.weight,0)} × 100&nbsp;%
+    <p>Score = ${sumWN.toFixed(2)} ÷ ${sumW} × 100&nbsp;%
        = <span class="example-result">${Math.round(score)}%</span></p>`;
 }
+
+document.getElementById('reset-map').onclick = () => {
+  optMap = defaultOptMap(); saveOptMap();
+  buildFormel(); renderBewerten();
+};
 
 // --- Navigation ------------------------------------------------------------
 function showView(name) {
@@ -358,7 +423,7 @@ function showView(name) {
   (el || document.getElementById('view-home')).classList.add('active');
   if (name === 'bewerten') { buildBewertenInputs(); renderBewerten(); }
   if (name === 'gewichtung') buildWeightControls();
-  if (name === 'daten') renderDataTable();
+  if (name === 'daten') { renderDataTable(); buildLegend(); }
   if (name === 'formel') buildFormel();
   window.scrollTo(0, 0);
 }
@@ -377,6 +442,7 @@ async function init() {
       quelle: Q[c.q] || c.q, nachname: c.nn, vorname: c.vn, geschlecht: c.g, alter: c.al,
       schulabschluss: c.sa, berufsabschluss: c.ba, qualifikationsstufe: c.qs,
       fehlzeiten: c.fz, gehaltEinstieg: c.ge, gehaltAktuell: c.ga,
+      einstellungsdatum: c.ed, kuendigungsdatum: c.kd,
       betriebszugehoerigkeit: c.bz, gekuendigt: !!c.k
     }));
   } catch (e) {
