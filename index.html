@@ -108,21 +108,23 @@
         Alle vorhandenen Personen mit ihrem Score (berechnet mit den aktuellen Gewichtungen).
       </p>
       <input id="daten-filter" class="filter" type="search" placeholder="Suchen (Name)…" />
-      <div class="table-scroll">
+      <div class="table-scroll wide">
         <table class="data-table" id="data-table">
           <thead>
             <tr>
-              <th data-sort="name">Name</th>
-              <th data-sort="quelle">Quelle</th>
-              <th data-sort="schul">Schulabschluss</th>
-              <th data-sort="beruf">Berufsabschluss</th>
-              <th data-sort="qual">Qualifikationsstufe</th>
-              <th data-sort="fz">Fehlzeiten (Monate)</th>
-              <th data-sort="score" class="sorted-desc">Score ▾</th>
+              <th data-sort="nachname" class="sorted-asc">Nachname ▴</th>
+              <th data-sort="vorname">Vorname</th>
+              <th data-sort="geschlecht">Geschlecht</th>
+              <th data-sort="alter">Alter</th>
               <th data-sort="ed">Einstellung</th>
               <th data-sort="kd">Kündigung</th>
-              <th data-sort="bz">Dauer (Jahre)</th>
-              <th data-sort="status">Status</th>
+              <th data-sort="fz">Fehlzeiten (Monate)</th>
+              <th data-sort="ga">Gehalt aktuell (€)</th>
+              <th data-sort="ge">Gehalt Einstieg (€)</th>
+              <th data-sort="qual">Qualifikationsstufe</th>
+              <th data-sort="schul">Schulabschluss</th>
+              <th data-sort="beruf">Berufsabschluss</th>
+              <th data-sort="score">Score</th>
             </tr>
           </thead>
           <tbody></tbody>
